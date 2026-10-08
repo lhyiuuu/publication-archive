@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publication Library Archive</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons for elegant UI icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Google Fonts: Playfair Display for titles (magazine feel) and Inter for readable text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Very light cool gray */
+            color: #1e293b;
+        }
+        .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* Smooth transitions for view switching */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Prose styles for the reading view to make articles look like real publications */
+        .article-content p {
+            margin-bottom: 1.25rem;
+            line-height: 1.8;
+            font-size: 1.125rem;
+        }
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- TOP HEADER -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto px-4 py-6 text-center">
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 tracking-tight">Publication Archive</h1>
+            <p class="text-gray-500 mt-2 text-sm md:text-base">1988 – 2022 | Preserving our legacy</p>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-5xl mx-auto px-4 mt-8">
+
+        <!-- ==========================================
+             VIEW 1: HOME (GRID & SEARCH/FILTERS)
+             ========================================== -->
+        <div id="view-home" class="fade-in">
+            
+            <!-- Control Panel: Search & Filters -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row gap-4 items-center">
+                
+                <!-- Search Bar -->
+                <div class="relative w-full md:flex-1">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
+                    <input 
+                        type="text" 
+                        id="searchInput"
+                        placeholder="Search keywords, article titles, or magazines..." 
+                        class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    >
+                </div>
+
+                <!-- Filters -->
+                <div class="flex w-full md:w-auto gap-4">
+                    <div class="w-1/2 md:w-40 relative">
+                        <select id="filterYear" class="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2.5 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                            <option value="All">All Years</option>
+                            <!-- Options injected by JS -->
+                        </select>
+                        <i class="ph ph-caret-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    </div>
+
+                    <div class="w-1/2 md:w-48 relative">
+                        <select id="filterCommittee" class="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2.5 px-4 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                            <option value="All">All Committees</option>
+                            <!-- Options injected by JS -->
+                        </select>
+                        <i class="ph ph-caret-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State (Shows if search finds nothing) -->
+            <div id="empty-state" class="hidden text-center py-16">
+                <i class="ph ph-book-open text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-medium text-gray-600">No publications found</h3>
+                <p class="text-gray-400 mt-2">Try adjusting your search keywords or filters.</p>
+            </div>
+
+            <!-- Grid Container (Strictly 2 per row on desktop, 1 on mobile) -->
+            <div id="magazine-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Magazine Cards injected by JS -->
+            </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 2: MAGAZINE DETAIL (TOC & PDF)
+             ========================================== -->
+        <div id="view-magazine" class="hidden fade-in">
+            <button onclick="navigate('home')" class="group flex items-center text-gray-600 hover:text-blue-600 mb-6 font-medium transition-colors">
+                <i class="ph ph-arrow-left text-xl mr-2 transform group-hover:-translate-x-1 transition-transform"></i>
+                Back to Library
+            </button>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="flex flex-col md:flex-row">
+                    <!-- Magazine Cover Column -->
+                    <div class="w-full md:w-1/3 p-6 bg-gray-50 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-200">
+                        <img id="detail-cover" src="" alt="Cover" class="w-full max-w-[250px] object-cover rounded shadow-md aspect-[1/1.4] mb-6">
+                        
+                        <!-- Read PDF Button -->
+                        <a id="detail-pdf-btn" href="#" target="_blank" class="w-full max-w-[250px] flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors shadow-sm">
+                            <i class="ph ph-file-pdf text-2xl mr-2"></i>
+                            Read Full PDF
+                        </a>
+                    </div>
+
+                    <!-- Table of Contents Column -->
+                    <div class="w-full md:w-2/3 p-6 md:p-8">
+                        <div class="mb-8">
+                            <span id="detail-year" class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-sm font-semibold rounded-full mb-3"></span>
+                            <h2 id="detail-title" class="text-3xl font-serif font-bold text-gray-900 mb-2"></h2>
+                            <p id="detail-committee" class="text-gray-500 flex items-center">
+                                <i class="ph ph-users mr-2"></i> <span></span>
+                            </p>
+                        </div>
+
+                        <div class="border-t border-gray-100 pt-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="ph ph-list-dashes mr-2 text-gray-500"></i> Table of Contents
+                            </h3>
+                            <div id="detail-toc" class="space-y-3">
+                                <!-- TOC Items injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             VIEW 3: ARTICLE READING VIEW
+             ========================================== -->
+        <div id="view-article" class="hidden fade-in">
+            <button onclick="navigate('magazine')" class="group flex items-center text-gray-600 hover:text-blue-600 mb-6 font-medium transition-colors">
+                <i class="ph ph-arrow-left text-xl mr-2 transform group-hover:-translate-x-1 transition-transform"></i>
+                Back to Content Page
+            </button>
+
+            <article class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-12 max-w-4xl mx-auto">
+                <header class="mb-10 text-center border-b border-gray-100 pb-8">
+                    <span id="article-mag-info" class="text-blue-600 font-semibold text-sm tracking-wider uppercase mb-3 block"></span>
+                    <h1 id="article-title" class="text-3xl md:text-5xl font-serif font-bold text-gray-900 leading-tight mb-4"></h1>
+                    <div id="article-keywords" class="flex flex-wrap justify-center gap-2 mt-4">
+                        <!-- Keywords injected by JS -->
+                    </div>
+                </header>
+                
+                <!-- Article Content -->
+                <div id="article-body" class="article-content text-gray-800">
+                    <!-- Content injected by JS -->
+                </div>
+            </article>
+        </div>
+
+    </main>
+
+    <!-- ==========================================
+         JAVASCRIPT & DATA (EDIT HERE!)
+         ========================================== -->
+    <script>
+        /**
+         * =========================================================================
+         *  EDIT YOUR PUBLICATIONS DATA HERE
+         * =========================================================================
+         * This is the master list of all your magazines and articles.
+         * You can copy/paste an entire block surrounded by { ... }, to add a new one.
+         * 
+         * Important rules:
+         * 1. 'id' must be unique for every magazine and every article.
+         * 2. 'year' should be a number (e.g., 1988).
+         * 3. 'coverImage' can be a link to an image. (Using placeholders here).
+         * 4. 'pdfLink' is the URL to the PDF file (e.g., Google Drive link or local file).
+         * 5. 'keywords' in articles help the search engine find them.
+         * 6. Use basic HTML like <p>, <b>, <br> inside the article 'content'.
+         */
+        const libraryData = [
+            {
+                id: "mag_1988",
+                title: "Volume 1: The Genesis",
+                year: 1988,
+                committee: "The Founding Committee",
+                // Replace this placeholder link with your actual image link, e.g. "images/cover1988.jpg"
+                coverImage: "https://placehold.co/600x840/2c3e50/ffffff?text=1988+Cover",
+                pdfLink: "#", 
+                articles: [
+                    {
+                        id: "art_1988_1",
+                        title: "Message from the First Chairperson",
+                        keywords: ["welcome", "history", "chairperson", "vision"],
+                        content: `
+                            <p>Welcome to the very first edition of our publication. This marks a momentous occasion for our newly formed committee.</p>
+                            <p>Our vision for this publication is to serve as a voice for the students, capturing our stories, our struggles, and our triumphs as we navigate these unprecedented times.</p>
+                            <p>We hope this archive serves generations to come.</p>
+                        `
+                    },
+                    {
+                        id: "art_1988_2",
+                        title: "The Campus Expansion Project",
+                        keywords: ["campus", "building", "facilities", "news"],
+                        content: `
+                            <p>The new west wing has finally been completed after three years of construction. Students can now enjoy the expanded library facilities.</p>
+                            <h3>Key Features of the New Wing</h3>
+                            <p>The new wing includes 50 new study booths, a microfiche archive, and three collaborative meeting rooms.</p>
+                        `
+                    }
+                ]
+            },
+            {
+                id: "mag_2005",
+                title: "Issue 18: Digital Horizons",
+                year: 2005,
+                committee: "The Millennium Board",
+                coverImage: "https://placehold.co/600x840/34495e/ecf0f1?text=2005+Issue",
+                pdfLink: "#",
+                articles: [
+                    {
+                        id: "art_2005_1",
+                        title: "Transitioning to the Digital Age",
+                        keywords: ["internet", "technology", "computers", "future"],
+                        content: `
+                            <p>With the internet becoming a staple in every student's life, our publication is looking at ways to move beyond paper. Are blogs the future of our committee?</p>
+                            <p>In this issue, we explore how technology is changing the way we study and communicate with one another across the campus network.</p>
+                        `
+                    },
+                    {
+                        id: "art_2005_2",
+                        title: "Annual Sports Day Recap",
+                        keywords: ["sports", "athletics", "competition", "events"],
+                        content: `
+                            <p>Despite the heavy rain in the morning, the 2005 Sports Day was a massive success. The Red House claimed the overall championship by a narrow margin of 5 points.</p>
+                        `
+                    }
+                ]
+            },
+            {
+                id: "mag_2022",
+                title: "Volume 35: The Final Chapter",
+                year: 2022,
+                committee: "The Legacy Committee",
+                coverImage: "https://placehold.co/600x840/e74c3c/ffffff?text=2022+Finale",
+                pdfLink: "#",
+                articles: [
+                    {
+                        id: "art_2022_1",
+                        title: "Closing the Curtains: An Editorial",
+                        keywords: ["farewell", "end", "editorial", "legacy", "last year"],
+                        content: `
+                            <p>It is with a heavy heart, yet immense pride, that we publish this final issue. As the last standing publication committee, we looked back at the 34 years of history we are leaving behind.</p>
+                            <p>Though the physical print may cease, the spirit of student journalism will evolve into new forms.</p>
+                            <p>Thank you to every reader, writer, and editor who made this journey possible.</p>
+                        `
+                    },
+                    {
+                        id: "art_2022_2",
+                        title: "Interview with Alumni",
+                        keywords: ["alumni", "interview", "past members", "reflections"],
+                        content: `
+                            <p>We sat down with members from the 1988 Founding Committee to discuss how the publication has evolved over three decades.</p>
+                            <h3>What was it like in 1988?</h3>
+                            <p>"We literally had to cut and paste articles onto layout boards," recalls the first editor-in-chief. "Seeing it digitized now is surreal."</p>
+                        `
+                    }
+                ]
+            }
+        ];
+        /* ==================== END OF DATA ==================== */
+
+        // State variables to track where the user is
+        let currentMagId = null;
+        let currentArtId = null;
+
+        // DOM Elements
+        const viewHome = document.getElementById('view-home');
+        const viewMagazine = document.getElementById('view-magazine');
+        const viewArticle = document.getElementById('view-article');
+        const magazineGrid = document.getElementById('magazine-grid');
+        const emptyState = document.getElementById('empty-state');
+        
+        const searchInput = document.getElementById('searchInput');
+        const filterYear = document.getElementById('filterYear');
+        const filterCommittee = document.getElementById('filterCommittee');
+
+
+        // Initialize the App on load
+        function initApp() {
+            populateFilters();
+            renderGrid(); // Initial render of all magazines
+            
+            // Event Listeners for Search and Filters
+            searchInput.addEventListener('input', renderGrid);
+            filterYear.addEventListener('change', renderGrid);
+            filterCommittee.addEventListener('change', renderGrid);
+        }
+
+        // Fill the Dropdowns with unique Years and Committees from the data
+        function populateFilters() {
+            const years = [...new Set(libraryData.map(mag => mag.year))].sort((a, b) => b - a); // Newest first
+            const committees = [...new Set(libraryData.map(mag => mag.committee))].sort();
+
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                filterYear.appendChild(option);
+            });
+
+            committees.forEach(comm => {
+                const option = document.createElement('option');
+                option.value = comm;
+                option.textContent = comm;
+                filterCommittee.appendChild(option);
+            });
+        }
+
+        // Filter data based on search and dropdowns, then draw the grid
+        function renderGrid() {
+            const query = searchInput.value.toLowerCase();
+            const selectedYear = filterYear.value;
+            const selectedComm = filterCommittee.value;
+
+            const filteredData = libraryData.filter(mag => {
+                // 1. Check Filters
+                const matchesYear = selectedYear === 'All' || mag.year.toString() === selectedYear;
+                const matchesComm = selectedComm === 'All' || mag.committee === selectedComm;
+                if (!matchesYear || !matchesComm) return false;
+
+                // 2. Check Search Query
+                if (!query) return true; // If no search, keep it
+
+                // Check if query is in magazine title or committee
+                if (mag.title.toLowerCase().includes(query) || mag.committee.toLowerCase().includes(query)) {
+                    return true;
+                }
+
+                // Check if query is in any article title or keywords
+                const hasMatchingArticle = mag.articles.some(art => {
+                    const titleMatch = art.title.toLowerCase().includes(query);
+                    const keywordMatch = art.keywords && art.keywords.some(kw => kw.toLowerCase().includes(query));
+                    return titleMatch || keywordMatch;
+                });
+
+                return hasMatchingArticle;
+            });
+
+            // Draw the HTML
+            magazineGrid.innerHTML = '';
+            
+            if (filteredData.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                
+                // Sort by year descending (newest to oldest)
+                filteredData.sort((a, b) => b.year - a.year);
+
+                filteredData.forEach(mag => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col group";
+                    // Add click event to open magazine
+                    card.onclick = () => openMagazine(mag.id);
+
+                    card.innerHTML = `
+                        <div class="relative w-full pt-[140%] overflow-hidden bg-gray-100">
+                            <img src="${mag.coverImage}" alt="${mag.title}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-md">${mag.year}</span>
+                            </div>
+                            <h3 class="text-xl font-serif font-bold text-gray-900 mb-1 leading-snug">${mag.title}</h3>
+                            <p class="text-sm text-gray-500 mt-auto flex items-center">
+                                <i class="ph ph-users mr-1.5"></i> ${mag.committee}
+                            </p>
+                        </div>
+                    `;
+                    magazineGrid.appendChild(card);
+                });
+            }
+        }
+
+        // Navigation logic to switch between the 3 views
+        function navigate(viewName) {
+            // Hide all views first
+            viewHome.classList.add('hidden');
+            viewMagazine.classList.add('hidden');
+            viewArticle.classList.add('hidden');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (viewName === 'home') {
+                viewHome.classList.remove('hidden');
+                currentMagId = null;
+                currentArtId = null;
+            } else if (viewName === 'magazine') {
+                viewMagazine.classList.remove('hidden');
+                currentArtId = null; // Clear active article
+            } else if (viewName === 'article') {
+                viewArticle.classList.remove('hidden');
+            }
+        }
+
+
+        // Open a specific magazine's detail page
+        function openMagazine(magId) {
+            currentMagId = magId;
+            const mag = libraryData.find(m => m.id === magId);
+            if (!mag) return;
+
+            // Populate Magazine Details
+            document.getElementById('detail-cover').src = mag.coverImage;
+            document.getElementById('detail-title').textContent = mag.title;
+            document.getElementById('detail-year').textContent = `Published in ${mag.year}`;
+            document.getElementById('detail-committee').innerHTML = `<i class="ph ph-users mr-2"></i> ${mag.committee}`;
+            document.getElementById('detail-pdf-btn').href = mag.pdfLink;
+
+            // Populate Table of Contents
+            const tocContainer = document.getElementById('detail-toc');
+            tocContainer.innerHTML = ''; // clear previous
+
+            mag.articles.forEach((art, index) => {
+                const item = document.createElement('div');
+                item.className = "group p-4 bg-gray-50 rounded-lg hover:bg-blue-50 border border-transparent hover:border-blue-100 cursor-pointer transition-colors flex justify-between items-center";
+                item.onclick = () => openArticle(magId, art.id);
+
+                item.innerHTML = `
+                    <div>
+                        <span class="text-xs text-gray-400 font-mono mb-1 block">Article ${String(index + 1).padStart(2, '0')}</span>
+                        <h4 class="text-gray-900 font-medium group-hover:text-blue-700 transition-colors">${art.title}</h4>
+                    </div>
+                    <i class="ph ph-arrow-right text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all"></i>
+                `;
+                tocContainer.appendChild(item);
+            });
+
+            // Switch View
+            navigate('magazine');
+        }
+
+        // Open a specific article for reading
+        function openArticle(magId, artId) {
+            currentMagId = magId;
+            currentArtId = artId;
+            
+            const mag = libraryData.find(m => m.id === magId);
+            const art = mag.articles.find(a => a.id === artId);
+            if (!mag || !art) return;
+
+            // Populate Article Details
+            document.getElementById('article-mag-info').textContent = `${mag.title} • ${mag.year}`;
+            document.getElementById('article-title').textContent = art.title;
+            document.getElementById('article-body').innerHTML = art.content;
+
+            // Populate Keywords (Badges)
+            const keywordContainer = document.getElementById('article-keywords');
+            keywordContainer.innerHTML = '';
+            if (art.keywords && art.keywords.length > 0) {
+                art.keywords.forEach(kw => {
+                    const badge = document.createElement('span');
+                    badge.className = "px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full border border-gray-200";
+                    badge.textContent = kw;
+                    keywordContainer.appendChild(badge);
+                });
+            }
+
+            // Switch View
+            navigate('article');
+        }
+
+        // Run setup when the page loads
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>
